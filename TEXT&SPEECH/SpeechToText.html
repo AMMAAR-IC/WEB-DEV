@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speech Modules | Voice Recognition App</title>
+    <meta name="description" content="Powerful speech-to-text application with module management and AI translation capabilities" />
+    <meta name="author" content="Lovable" />
+    <meta property="og:image" content="/og-image.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-darker: #252526;
+            --border-dark: #333;
+            --text-light: #e0e0e0;
+            --text-dim: #a0a0a0;
+            --primary: #6200ea;
+            --primary-light: #7c4dff;
+            --secondary: #bb86fc;
+            --danger: #cf6679;
+            --success: #03dac6;
+            --warning: #ffb74d;
+            --info: #2196f3;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --btn-shadow: 0 2px 10px rgba(98, 0, 234, 0.2);
+            --transition-fast: all 0.2s ease;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-darker);
+            border-right: 1px solid var(--border-dark);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            position: relative;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .app-title i {
+            margin-right: 10px;
+            color: var(--primary-light);
+        }
+
+        .app-description {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .modules-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 15px;
+        }
+
+        .modules-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 0 5px;
+        }
+
+        .modules-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+        }
+
+        .modules-count {
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+
+        .module {
+            padding: 12px 15px;
+            cursor: pointer;
+            margin: 8px 0;
+            position: relative;
+            border-radius: 8px;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .module-info {
+            flex: 1;
+        }
+
+        .module-name {
+            font-size: 15px;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .module-preview {
+            font-size: 12px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+
+        .module:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .module.selected {
+            background: var(--primary);
+            box-shadow: 0 2px 8px rgba(98, 0, 234, 0.3);
+        }
+
+        .module.selected .module-name,
+        .module.selected .module-preview {
+            color: white;
+        }
+
+        .module-actions {
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: var(--transition-fast);
+        }
+
+        .module:hover .module-actions {
+            opacity: 1;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: var(--transition-fast);
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-icon.delete:hover {
+            color: var(--danger);
+        }
+
+        .btn-icon.edit:hover {
+            color: var(--info);
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border-dark);
+        }
+
+        /* Main Content Styles */
+        .editor {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .current-module-title {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .input-group {
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .input-edit {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            border: 1px solid var(--border-dark);
+            padding: 8px 10px;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 15px;
+            transition: var(--transition-fast);
+        }
+
+        .input-edit:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(98, 0, 234, 0.2);
+        }
+
+        .speech-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-dark);
+            border-radius: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .card-inner {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .record-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .btn-record {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            cursor: pointer;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--btn-shadow);
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+        }
+
+        .listening-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+
+        .btn-record.recording .listening-wave {
+            transform: translateY(0);
+            animation: wave 1.5s infinite;
+        }
+
+        .btn-record:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(98, 0, 234, 0.4);
+        }
+
+        .btn-record.recording {
+            background: linear-gradient(135deg, #ff5722, #ff9800);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status {
+            margin-top: 10px;
+            color: var(--text-dim);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .timer {
+            margin-top: 5px;
+            font-size: 14px;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .text-container {
+            flex: 1;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .output-text {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            border: 1px solid var(--border-dark);
+            border-radius: 12px;
+            height: 100%;
+            width: 100%;
+            padding: 20px;
+            resize: none;
+            font-size: 16px;
+            line-height: 1.6;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: var(--transition-fast);
+        }
+
+        .output-text:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(98, 0, 234, 0.1);
+        }
+
+        .word-count {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: var(--bg-darker);
+            color: var(--text-dim);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            box-shadow: var(--btn-shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(98, 0, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-dark);
+            color: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: rgba(207, 102, 121, 0.1);
+            border: 1px solid rgba(207, 102, 121, 0.3);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: rgba(207, 102, 121, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* AI Tools Section */
+        .ai-tools-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-dark);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .ai-tools-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .ai-tools-title {
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-tools-title i {
+            color: var(--info);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            padding: 12px;
+            transition: var(--transition-fast);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .tool-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tool-title i {
+            color: var(--primary-light);
+        }
+
+        .tool-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .tool-select {
+            flex: 1;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            border: 1px solid var(--border-dark);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition-fast);
+        }
+
+        .tool-select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Placeholder Styles */
+        .placeholder {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .placeholder-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: var(--primary-light);
+            opacity: 0.7;
+        }
+
+        .placeholder-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .placeholder-text {
+            font-size: 14px;
+            max-width: 400px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-darker);
+            border-left: 4px solid var(--success);
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 100;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            color: var(--success);
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .toast-message {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .toast-close {
+            color: var(--text-dim);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px;
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--danger);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        .toast.warning .toast-icon {
+            color: var(--warning);
+        }
+
+        .toast.info {
+            border-left-color: var(--info);
+        }
+
+        .toast.info .toast-icon {
+            color: var(--info);
+        }
+
+        /* Add scroll styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes wave {
+            0% {
+                height: 30%;
+            }
+
+            50% {
+                height: 60%;
+            }
+
+            100% {
+                height: 30%;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 250px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modal Dialog */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-darker);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-20px);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .modal-close:hover {
+            color: var(--text-light);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-dark);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="app-title">
+                <i class="fas fa-microphone-alt"></i>
+                <span>Speech Modules</span>
+            </div>
+            <div class="app-description">Voice recognition and text management</div>
+        </div>
+        <div class="modules-container">
+            <div class="modules-header">
+                <div class="modules-title">Your Modules</div>
+                <div class="modules-count" id="modulesCount">0</div>
+            </div>
+            <div id="modules"></div>
+        </div>
+        <div class="sidebar-footer">
+            <button class="btn btn-primary" id="newModuleBtn">
+                <i class="fas fa-plus"></i> New Module
+            </button>
+        </div>
+    </div>
+
+    <div class="editor">
+        <div id="placeholder" class="placeholder">
+            <div class="placeholder-icon">
+                <i class="fas fa-microphone"></i>
+            </div>
+            <div class="placeholder-title">Start Recording Your Voice</div>
+            <div class="placeholder-text">
+                Select an existing module or create a new one to begin transcribing your speech.
+                Your voice will be converted to text in real-time.
+            </div>
+            <button class="btn btn-primary" id="createFirstModule">
+                <i class="fas fa-plus"></i> Create First Module
+            </button>
+        </div>
+
+        <div id="moduleContent" style="display: none; height: 100%;">
+            <div class="editor-header">
+                <div class="current-module-title" id="currentModuleTitle">Module Name</div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="renameModuleBtn">
+                        <i class="fas fa-edit"></i> Rename
+                    </button>
+                    <button class="btn btn-danger" id="deleteCurrentBtn">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                </div>
+            </div>
+
+            <div class="speech-card">
+                <div class="card-inner">
+                    <div class="record-container">
+                        <button id="recordButton" class="btn-record">
+                            <div class="avatar">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                            <div class="listening-wave"></div>
+                        </button>
+                        <div id="status" class="status">Click to start recording</div>
+                        <div id="timer" class="timer" style="display: none;">00:00</div>
+                    </div>
+
+                    <div class="text-container">
+                        <textarea id="outputText" class="output-text" placeholder="Your speech will appear here..."></textarea>
+                        <div id="wordCount" class="word-count">0 words | 0 characters</div>
+                    </div>
+
+                    <div class="actions-bar">
+                        <div class="btn-group">
+                            <button id="clearButton" class="btn btn-secondary">
+                                <i class="fas fa-eraser"></i> Clear Text
+                            </button>
+                            <button id="copyButton" class="btn btn-secondary">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <button id="exportButton" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+
+                    <div class="ai-tools-section">
+                        <div class="ai-tools-header">
+                            <div class="ai-tools-title">
+                                <i class="fas fa-magic"></i> AI Tools
+                            </div>
+                        </div>
+                        <div class="tools-grid">
+                            <div class="tool-card">
+                                <div class="tool-title">
+                                    <i class="fas fa-language"></i> Translation
+                                </div>
+                                <div class="tool-controls">
+                                    <select id="languageSelect" class="tool-select">
+                                        <option value="en">English</option>
+                                        <option value="es">Spanish</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="it">Italian</option>
+                                        <option value="pt">Portuguese</option>
+                                        <option value="ru">Russian</option>
+                                        <option value="zh">Chinese</option>
+                                        <option value="ja">Japanese</option>
+                                        <option value="ko">Korean</option>
+                                        <option value="ar">Arabic</option>
+                                    </select>
+                                    <button class="btn btn-secondary" id="translateBtn">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="tool-card">
+                                <div class="tool-title">
+                                    <i class="fas fa-spell-check"></i> Text Processing
+                                </div>
+                                <div class="tool-controls">
+                                    <select id="processingSelect" class="tool-select">
+                                        <option value="grammar">Fix Grammar</option>
+                                        <option value="summary">Summarize</option>
+                                        <option value="format">Format Text</option>
+                                    </select>
+                                    <button class="btn btn-secondary" id="processBtn">
+                                        <i class="fas fa-magic"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="toast-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">Success!</div>
+            <div class="toast-message">Operation completed successfully.</div>
+        </div>
+        <button class="toast-close" onclick="hideToast()">×</button>
+    </div>
+
+    <!-- Rename Module Modal -->
+    <div id="renameModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Rename Module</div>
+                <button class="modal-close" id="closeRenameModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="newModuleName" class="input-edit" placeholder="Enter new module name">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelRename">Cancel</button>
+                <button class="btn btn-primary" id="confirmRename">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        const state = {
+            modules: [],
+            currentModule: null,
+            recognition: null,
+            isRecording: false,
+            recordingStartTime: null,
+            timerInterval: null
+        };
+
+        // DOM Elements
+        const elements = {
+            modules: document.getElementById('modules'),
+            modulesCount: document.getElementById('modulesCount'),
+            placeholder: document.getElementById('placeholder'),
+            moduleContent: document.getElementById('moduleContent'),
+            currentModuleTitle: document.getElementById('currentModuleTitle'),
+            outputText: document.getElementById('outputText'),
+            status: document.getElementById('status'),
+            timer: document.getElementById('timer'),
+            recordButton: document.getElementById('recordButton'),
+            clearButton: document.getElementById('clearButton'),
+            copyButton: document.getElementById('copyButton'),
+            exportButton: document.getElementById('exportButton'),
+            newModuleBtn: document.getElementById('newModuleBtn'),
+            createFirstModule: document.getElementById('createFirstModule'),
+            deleteCurrentBtn: document.getElementById('deleteCurrentBtn'),
+            renameModuleBtn: document.getElementById('renameModuleBtn'),
+            translateBtn: document.getElementById('translateBtn'),
+            processBtn: document.getElementById('processBtn'),
+            wordCount: document.getElementById('wordCount'),
+            toast: document.getElementById('toast'),
+            renameModal: document.getElementById('renameModal'),
+            newModuleName: document.getElementById('newModuleName'),
+            confirmRename: document.getElementById('confirmRename'),
+            cancelRename: document.getElementById('cancelRename'),
+            closeRenameModal: document.getElementById('closeRenameModal')
+        };
+
+        // Initialize the application
+        function initApp() {
+            initializeSpeechRecognition();
+            renderModules();
+            if (state.modules.length > 0) {
+                selectModule(state.modules[0].id);
+            } else {
+                showPlaceholder();
+            }
+        }
+
+        // Initialize Speech Recognition
+        function initializeSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                state.recognition = new SpeechRecognition();
+                state.recognition.continuous = true;
+                state.recognition.interimResults = true;
+                state.recognition.lang = 'en-US';
+
+                state.recognition.onstart = handleRecognitionStart;
+                state.recognition.onend = handleRecognitionEnd;
+                state.recognition.onresult = handleRecognitionResult;
+                state.recognition.onerror = handleRecognitionError;
+            } else {
+                console.error('Speech Recognition API is not supported by this browser.');
+                showToast('Error', 'Speech Recognition API is not supported by this browser', 'error');
+            }
+        }
+
+        // Handle Recognition Start
+        function handleRecognitionStart() {
+            state.isRecording = true;
+            state.recordingStartTime = Date.now();
+            elements.recordButton.classList.add('recording');
+            elements.status.textContent = 'Listening...';
+            elements.timer.style.display = 'block';
+            startTimer();
+            showToast('Recording started', 'Your voice is being captured', 'info');
+        }
+
+        // Handle Recognition End
+        function handleRecognitionEnd() {
+            state.isRecording = false;
+            elements.recordButton.classList.remove('recording');
+            elements.status.textContent = 'Click to start recording';
+            elements.timer.style.display = 'none';
+            clearInterval(state.timerInterval);
+            showToast('Recording stopped', 'You can start a new recording session', 'warning');
+        }
+
+        // Handle Recognition Result
+        function handleRecognitionResult(event) {
+            let interimTranscript = '';
+            let finalTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+
+            elements.outputText.value = finalTranscript + interimTranscript;
+            updateWordCount();
+        }
+
+        // Handle Recognition Error
+        function handleRecognitionError(event) {
+            console.error('Speech recognition error detected: ', event.error);
+            showToast('Error', 'There was an issue with the speech recognition service', 'error');
+        }
+
+        // Timer Logic
+        function startTimer() {
+            state.recordingStartTime = Date.now();
+            state.timerInterval = setInterval(() => {
+                const elapsedTime = Math.floor((Date.now() - state.recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsedTime / 60);
+                const seconds = elapsedTime % 60;
+                elements.timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Word Count Logic
+        function updateWordCount() {
+            const text = elements.outputText.value;
+            const wordCount = text.trim().split(/\s+/).length;
+            const charCount = text.length;
+            elements.wordCount.textContent = `${wordCount} words | ${charCount} characters`;
+        }
+
+        // Toast Notification Logic
+        function showToast(title, message, type = 'success') {
+            elements.toast.classList.remove('show', 'error', 'warning', 'info');
+            elements.toast.classList.add('show', type);
+            elements.toast.querySelector('.toast-title').textContent = title;
+            elements.toast.querySelector('.toast-message').textContent = message;
+            setTimeout(() => {
+                elements.toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function hideToast() {
+            elements.toast.classList.remove('show');
+        }
+
+        // Event Listeners
+        elements.recordButton.addEventListener('click', () => {
+            if (state.isRecording) {
+                state.recognition.stop();
+            } else {
+                state.recognition.start();
+            }
+        });
+
+        elements.clearButton.addEventListener('click', () => {
+            elements.outputText.value = '';
+            updateWordCount();
+        });
+
+        elements.copyButton.addEventListener('click', () => {
+            elements.outputText.select();
+            document.execCommand('copy');
+            showToast('Copied', 'Text has been copied to the clipboard', 'success');
+        });
+
+        elements.exportButton.addEventListener('click', () => {
+            const text = elements.outputText.value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'transcript.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Exported', 'Text has been exported successfully', 'success');
+        });
+
+        elements.newModuleBtn.addEventListener('click', createModule);
+        elements.createFirstModule.addEventListener('click', createModule);
+        elements.deleteCurrentBtn.addEventListener('click', () => deleteModule(state.currentModule));
+        elements.renameModuleBtn.addEventListener('click', showRenameModal);
+        elements.confirmRename.addEventListener('click', renameModule);
+        elements.cancelRename.addEventListener('click', hideRenameModal);
+        elements.closeRenameModal.addEventListener('click', hideRenameModal);
+
+        // Module Management
+        function createModule() {
+            const moduleName = prompt('Enter a name for the new module:');
+            if (moduleName) {
+                const newModule = { id: Date.now(), name: moduleName, content: '' };
+                state.modules.push(newModule);
+                renderModules();
+                selectModule(newModule.id);
+                showToast('Module Created', 'A new module has been created successfully', 'success');
+            }
+        }
+
+        function deleteModule(moduleId) {
+            state.modules = state.modules.filter(module => module.id !== moduleId);
+            renderModules();
+            if (state.modules.length > 0) {
+                selectModule(state.modules[0].id);
+            } else {
+                showPlaceholder();
+            }
+            showToast('Module Deleted', 'The module has been deleted successfully', 'success');
+        }
+
+        function renameModule() {
+            const newName = elements.newModuleName.value.trim();
+            if (newName && state.currentModule) {
+                state.currentModule.name = newName;
+                renderModules();
+                elements.currentModuleTitle.textContent = newName;
+                hideRenameModal();
+                showToast('Module Renamed', 'The module has been renamed successfully', 'success');
+            }
+        }
+
+        function showRenameModal() {
+            elements.newModuleName.value = state.currentModule ? state.currentModule.name : '';
+            elements.renameModal.classList.add('show');
+        }
+
+        function hideRenameModal() {
+            elements.renameModal.classList.remove('show');
+        }
+
+        function renderModules() {
+            elements.modules.innerHTML = '';
+            state.modules.forEach(module => {
+                const moduleElement = document.createElement('div');
+                moduleElement.classList.add('module');
+                moduleElement.setAttribute('data-id', module.id);
+                moduleElement.innerHTML = `
+                    <div class="module-info">
+                        <div class="module-name">${module.name}</div>
+                        <div class="module-preview">${module.content.substring(0, 30)}</div>
+                    </div>
+                    <div class="module-actions">
+                        <button class="btn-icon edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon delete"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+                moduleElement.querySelector('.edit').addEventListener('click', () => {
+                    showRenameModal();
+                });
+                moduleElement.querySelector('.delete').addEventListener('click', () => {
+                    deleteModule(module.id);
+                });
+                moduleElement.addEventListener('click', () => {
+                    selectModule(module.id);
+                });
+                elements.modules.appendChild(moduleElement);
+            });
+            elements.modulesCount.textContent = state.modules.length;
+        }
+
+        function selectModule(moduleId) {
+            state.currentModule = state.modules.find(module => module.id === moduleId);
+            if (state.currentModule) {
+                elements.currentModuleTitle.textContent = state.currentModule.name;
+                elements.outputText.value = state.currentModule.content;
+                updateWordCount();
+                elements.placeholder.style.display = 'none';
+                elements.moduleContent.style.display = 'flex';
+                document.querySelectorAll('.module').forEach(module => {
+                    module.classList.remove('selected');
+                    if (module.getAttribute('data-id') == moduleId) {
+                        module.classList.add('selected');
+                    }
+                });
+            }
+        }
+
+        function showPlaceholder() {
+            elements.placeholder.style.display = 'flex';
+            elements.moduleContent.style.display = 'none';
+        }
+
+        // Start the application
+        initApp();
+    </script>
+</body>
+</html>
