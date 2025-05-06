@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Code Style Notes</title>
+    <style>
+        :root {
+            --sidebar-bg: #252526;
+            --text-color: #CCCCCC;
+            --hover-bg: #2A2D2E;
+            --active-bg: #37373D;
+            --border-color: #454545;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            height: 100vh;
+            background: #1E1E1E;
+            color: var(--text-color);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: var(--sidebar-bg);
+            padding: 10px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .explorer-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 8px 20px;
+            letter-spacing: 1px;
+            color: #858585;
+        }
+
+        .module-item {
+            padding: 4px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border-radius: 3px;
+            user-select: none;
+        }
+
+        .module-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .module-item.active {
+            background: var(--active-bg);
+        }
+
+        .chevron {
+            margin-right: 8px;
+            transition: transform 0.2s;
+            opacity: 0.6;
+        }
+
+        .module-item.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        .file-item {
+            padding: 4px 20px 4px 38px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .file-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .file-icon {
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        .editor-area {
+            flex: 1;
+            padding: 20px;
+            background: #1E1E1E;
+        }
+
+        #editor {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: #CCCCCC;
+            font-size: 14px;
+            font-family: 'Consolas', monospace;
+            resize: none;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="explorer-title">EXPLORER</div>
+        <div id="modules"></div>
+        <div class="module-item" onclick="showModuleModal()">
+            <span style="margin-left: 24px">+ New Module</span>
+        </div>
+    </div>
+
+    <div class="editor-area">
+        <textarea id="editor" placeholder="Select a note to start editing"></textarea>
+    </div>
+
+    <script>
+        let state = {
+            modules: JSON.parse(localStorage.getItem('modules')) || [],
+            selectedNote: null
+        };
+
+        function showModuleModal() {
+            const name = prompt('Enter module name:');
+            if (name) createModule(name);
+        }
+
+        function createModule(name) {
+            const module = {
+                id: Date.now(),
+                name: name,
+                expanded: true,
+                notes: []
+            };
+            state.modules.push(module);
+            renderModules();
+            saveState();
+        }
+
+        function createNote(moduleId) {
+            const module = state.modules.find(m => m.id === moduleId);
+            const note = {
+                id: Date.now(),
+                name: `Note-${module.notes.length + 1}`,
+                content: ''
+            };
+            module.notes.push(note);
+            renderModules();
+            saveState();
+        }
+
+        function toggleModule(moduleId) {
+            const module = state.modules.find(m => m.id === moduleId);
+            module.expanded = !module.expanded;
+            renderModules();
+            saveState();
+        }
+
+        function renderModules() {
+            const container = document.getElementById('modules');
+            container.innerHTML = state.modules.map(module => `
+                <div>
+                    <div class="module-item ${module.expanded ? '' : 'collapsed'}" 
+                         onclick="toggleModule(${module.id})">
+                        <svg class="chevron" width="12" height="12" viewBox="0 0 16 16">
+                            <path fill="currentColor" d="M5 12l6-6-6-6z"/>
+                        </svg>
+                        📁 ${module.name}
+                        <div style="flex:1"></div>
+                        <button onclick="createNote(${module.id}); event.stopPropagation()" 
+                                style="background:none; border:none; color:#ccc; padding:2px">
+                            +
+                        </button>
+                    </div>
+                    ${module.expanded ? `
+                        <div>
+                            ${module.notes.map(note => `
+                                <div class="file-item" onclick="selectNote(${note.id})">
+                                    <svg class="file-icon" width="14" height="14" viewBox="0 0 16 16">
+                                        <path fill="currentColor" d="M13 4v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h5l3 3zm-3 0V1L13 4h-3z"/>
+                                    </svg>
+                                    ${note.name}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function selectNote(noteId) {
+            state.selectedNote = noteId;
+            const note = getNoteById(noteId);
+            document.getElementById('editor').value = note.content;
+        }
+
+        function saveState() {
+            localStorage.setItem('modules', JSON.stringify(state.modules));
+        }
+
+        // Initialize
+        renderModules();
+    </script>
+</body>
+</html>
