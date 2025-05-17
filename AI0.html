@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Dashboard</title>
+    <style>
+        /* CSS Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary-color: #10b981;
+            --secondary-hover: #059669;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --warning-color: #f59e0b;
+            --warning-hover: #d97706;
+            --info-color: #3b82f6;
+            --info-hover: #2563eb;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-color: #f9fafb;
+            --text-light: #d1d5db;
+            --bg-color: #111827;
+            --bg-secondary: #1f2937;
+            --border-color: #374151;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.26);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.26);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: var(--transition);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Layout */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-collapsed {
+            width: 70px;
+            padding: 1.5rem 0.5rem;
+        }
+
+        .sidebar-collapsed .sidebar-item-text,
+        .sidebar-collapsed .sidebar-header-text {
+            display: none;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 0.75rem;
+        }
+
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .sidebar-header-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .sidebar-toggle {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1.25rem;
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-light);
+            text-decoration: none;
+        }
+
+        .sidebar-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-item.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .sidebar-item-icon {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            margin-left: 250px;
+            transition: var(--transition);
+        }
+
+        .main-content-expanded {
+            margin-left: 70px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Widgets Grid */
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .widget {
+            background-color: var(--bg-secondary);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .widget:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .widget-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .widget-content {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Todo Widget */
+        .todo-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .todo-input {
+            flex-grow: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+
+        .todo-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        .todo-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            background-color: var(--bg-color);
+            transition: var(--transition);
+        }
+
+        .todo-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .todo-checkbox {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .todo-checkbox.checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .todo-text {
+            flex-grow: 1;
+            transition: var(--transition);
+        }
+
+        .todo-text.completed {
+            text-decoration: line-through;
+            color: var(--text-light);
+        }
+
+        .todo-delete {
+            color: var(--danger-color);
+            cursor: pointer;
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+
+        .todo-delete:hover {
+            opacity: 1;
+        }
+
+        /* Weather Widget */
+        .weather-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .weather-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+        }
+
+        .weather-temp {
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+
+        .weather-desc {
+            font-size: 1.25rem;
+            color: var(--text-light);
+        }
+
+        .weather-details {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .weather-detail {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .weather-detail-icon {
+            font-size: 1.5rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .weather-location {
+            margin-top: 1rem;
+            font-size: 1.125rem;
+        }
+
+        /* Calculator Widget */
+        .calculator {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .calculator-display {
+            grid-column: span 4;
+            background-color: var(--bg-color);
+            padding: 1rem;
+            text-align: right;
+            font-size: 1.5rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .calculator-button {
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: none;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1.125rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .calculator-button:hover {
+            background-color: var(--border-color);
+        }
+
+        .calculator-button.operator {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .calculator-button.operator:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .calculator-button.equals {
+            background-color: var(--success-color);
+            color: white;
+            grid-column: span 2;
+        }
+
+        .calculator-button.equals:hover {
+            background-color: var(--success-hover);
+        }
+
+        .calculator-button.clear {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .calculator-button.clear:hover {
+            background-color: var(--danger-hover);
+        }
+
+        /* Notes Widget */
+        .notes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: 100%;
+        }
+
+        .notes-textarea {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            resize: none;
+            min-height: 200px;
+            transition: var(--transition);
+        }
+
+        .notes-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        .notes-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Clock Widget */
+        .clock-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 1rem;
+        }
+
+        .clock-time {
+            font-size: 3rem;
+            font-weight: 600;
+        }
+
+        .clock-date {
+            font-size: 1.25rem;
+            color: var(--text-light);
+        }
+
+        .clock-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Tic Tac Toe Widget */
+        .tictactoe-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tictactoe-cell {
+            aspect-ratio: 1;
+            background-color: var(--bg-color);
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .tictactoe-cell:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .tictactoe-cell.x {
+            color: var(--primary-color);
+        }
+
+        .tictactoe-cell.o {
+            color: var(--warning-color);
+        }
+
+        .tictactoe-status {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 1.125rem;
+            min-height: 28px;
+        }
+
+        .tictactoe-reset {
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: var(--success-hover);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: var(--warning-hover);
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: var(--info-hover);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.125rem;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding: 1.5rem 0.5rem;
+            }
+
+            .sidebar-item-text,
+            .sidebar-header-text {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+
+            .widgets-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-expanded {
+                width: 250px;
+                padding: 1.5rem;
+            }
+
+            .sidebar-expanded .sidebar-item-text,
+            .sidebar-expanded .sidebar-header-text {
+                display: block;
+            }
+
+            .mobile-sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+                display: none;
+            }
+
+            .mobile-sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .animate-slide-in-left {
+            animation: slideInLeft 0.3s ease-in-out;
+        }
+
+        .animate-slide-in-up {
+            animation: slideInUp 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="dashboard">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">D</div>
+                <div class="sidebar-header-text">Dashboard</div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="sidebar-items">
+                <a href="#" class="sidebar-item active" data-section="dashboard">
+                    <div class="sidebar-item-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="sidebar-item-text">Dashboard</div>
+                </a>
+                <a href="#" class="sidebar-item" data-section="tasks">
+                    <div class="sidebar-item-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="sidebar-item-text">Tasks</div>
+                </a>
+                <a href="#" class="sidebar-item" data-section="notes">
+                    <div class="sidebar-item-icon">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                    <div class="sidebar-item-text">Notes</div>
+                </a>
+                <a href="#" class="sidebar-item" data-section="calculator">
+                    <div class="sidebar-item-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="sidebar-item-text">Calculator</div>
+                </a>
+                <a href="#" class="sidebar-item" data-section="weather">
+                    <div class="sidebar-item-icon">
+                        <i class="fas fa-cloud-sun"></i>
+                    </div>
+                    <div class="sidebar-item-text">Weather</div>
+                </a>
+                <a href="#" class="sidebar-item" data-section="games">
+                    <div class="sidebar-item-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <div class="sidebar-item-text">Games</div>
+                </a>
+                <a href="#" class="sidebar-item" data-section="settings">
+                    <div class="sidebar-item-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="sidebar-item-text">Settings</div>
+                </a>
+            </div>
+            <div class="sidebar-footer">
+                <a href="#" class="sidebar-item" id="themeToggle">
+                    <div class="sidebar-item-icon">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </div>
+                    <div class="sidebar-item-text">Dark Mode</div>
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content" id="mainContent">
+            <header class="header">
+                <h1 class="header-title">Dashboard</h1>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="headerThemeToggle">
+                        <i class="fas fa-moon" id="headerThemeIcon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="widgets-grid">
+                <!-- Todo Widget -->
+                <div class="widget animate-fade-in">
+                    <div class="widget-header">
+                        <h2 class="widget-title">Todo List</h2>
+                        <div class="widget-actions">
+                            <button class="btn btn-sm btn-outline" id="clearCompletedTodos">
+                                <i class="fas fa-broom"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <form class="todo-form" id="todoForm">
+                            <input type="text" class="todo-input" id="todoInput" placeholder="Add a new task...">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </form>
+                        <ul class="todo-list" id="todoList">
+                            <!-- Todo items will be added here dynamically -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Weather Widget -->
+                <div class="widget animate-fade-in">
+                    <div class="widget-header">
+                        <h2 class="widget-title">Weather</h2>
+                        <div class="widget-actions">
+                            <button class="btn btn-sm btn-outline" id="refreshWeather">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <div class="weather-content" id="weatherContent">
+                            <div class="weather-icon">
+                                <i class="fas fa-cloud-sun"></i>
+                            </div>
+                            <div class="weather-temp">--°C</div>
+                            <div class="weather-desc">Loading weather data...</div>
+                            <div class="weather-details">
+                                <div class="weather-detail">
+                                    <div class="weather-detail-icon">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    <div>--</div>
+                                </div>
+                                <div class="weather-detail">
+                                    <div class="weather-detail-icon">
+                                        <i class="fas fa-wind"></i>
+                                    </div>
+                                    <div>--</div>
+                                </div>
+                                <div class="weather-detail">
+                                    <div class="weather-detail-icon">
+                                        <i class="fas fa-compass"></i>
+                                    </div>
+                                    <div>--</div>
+                                </div>
+                            </div>
+                            <div class="weather-location">
+                                <i class="fas fa-map-marker-alt"></i> Loading location...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculator Widget -->
+                <div class="widget animate-fade-in">
+                    <div class="widget-header">
+                        <h2 class="widget-title">Calculator</h2>
+                    </div>
+                    <div class="widget-content">
+                        <div class="calculator-display" id="calculatorDisplay">0</div>
+                        <div class="calculator">
+                            <button class="calculator-button clear" data-action="clear">C</button>
+                            <button class="calculator-button" data-action="backspace">⌫</button>
+                            <button class="calculator-button operator" data-action="percent">%</button>
+                            <button class="calculator-button operator" data-action="divide">÷</button>
+                            <button class="calculator-button" data-value="7">7</button>
+                            <button class="calculator-button" data-value="8">8</button>
+                            <button class="calculator-button" data-value="9">9</button>
+                            <button class="calculator-button operator" data-action="multiply">×</button>
+                            <button class="calculator-button" data-value="4">4</button>
+                            <button class="calculator-button" data-value="5">5</button>
+                            <button class="calculator-button" data-value="6">6</button>
+                            <button class="calculator-button operator" data-action="subtract">-</button>
+                            <button class="calculator-button" data-value="1">1</button>
+                            <button class="calculator-button" data-value="2">2</button>
+                            <button class="calculator-button" data-value="3">3</button>
+                            <button class="calculator-button operator" data-action="add">+</button>
+                            <button class="calculator-button" data-value="0">0</button>
+                            <button class="calculator-button" data-value=".">.</button>
+                            <button class="calculator-button equals" data-action="calculate">=</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes Widget -->
+                <div class="widget animate-fade-in">
+                    <div class="widget-header">
+                        <h2 class="widget-title">Quick Notes</h2>
+                        <div class="widget-actions">
+                            <button class="btn btn-sm btn-outline" id="clearNotes">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <div class="notes-container">
+                            <textarea class="notes-textarea" id="notesTextarea" placeholder="Write your notes here..."></textarea>
+                            <div class="notes-actions">
+                                <button class="btn btn-primary" id="saveNotes">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                                <span id="notesSaveStatus"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clock Widget -->
+                <div class="widget animate-fade-in">
+                    <div class="widget-header">
+                        <h2 class="widget-title">Clock</h2>
+                        <div class="widget-actions">
+                            <button class="btn btn-sm btn-outline" id="clockFormat">
+                                <i class="fas fa-clock"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <div class="clock-container">
+                            <div class="clock-time" id="clockTime">--:--:--</div>
+                            <div class="clock-date" id="clockDate">---, --- --, ----</div>
+                            <div class="clock-controls">
+                                <button class="btn btn-outline" id="startStopwatch">
+                                    <i class="fas fa-stopwatch"></i> Stopwatch
+                                </button>
+                                <button class="btn btn-outline" id="startTimer">
+                                    <i class="fas fa-hourglass-start"></i> Timer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tic Tac Toe Widget -->
+                <div class="widget animate-fade-in">
+                    <div class="widget-header">
+                        <h2 class="widget-title">Tic Tac Toe</h2>
+                    </div>
+                    <div class="widget-content">
+                        <div class="tictactoe-board" id="tictactoeBoard">
+                            <div class="tictactoe-cell" data-index="0"></div>
+                            <div class="tictactoe-cell" data-index="1"></div>
+                            <div class="tictactoe-cell" data-index="2"></div>
+                            <div class="tictactoe-cell" data-index="3"></div>
+                            <div class="tictactoe-cell" data-index="4"></div>
+                            <div class="tictactoe-cell" data-index="5"></div>
+                            <div class="tictactoe-cell" data-index="6"></div>
+                            <div class="tictactoe-cell" data-index="7"></div>
+                            <div class="tictactoe-cell" data-index="8"></div>
+                        </div>
+                        <div class="tictactoe-status" id="tictactoeStatus">X's turn</div>
+                        <button class="btn btn-primary tictactoe-reset" id="tictactoeReset">
+                            <i class="fas fa-redo"></i> Reset Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <script>
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const themeToggle = document.getElementById('themeToggle');
+        const headerThemeToggle = document.getElementById('headerThemeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const headerThemeIcon = document.getElementById('headerThemeIcon');
+        const todoForm = document.getElementById('todoForm');
+        const todoInput = document.getElementById('todoInput');
+        const todoList = document.getElementById('todoList');
+        const clearCompletedTodos = document.getElementById('clearCompletedTodos');
+        const calculatorDisplay = document.getElementById('calculatorDisplay');
+        const calculatorButtons = document.querySelectorAll('.calculator-button');
+        const notesTextarea = document.getElementById('notesTextarea');
+        const saveNotes = document.getElementById('saveNotes');
+        const clearNotes = document.getElementById('clearNotes');
+        const notesSaveStatus = document.getElementById('notesSaveStatus');
+        const clockTime = document.getElementById('clockTime');
+        const clockDate = document.getElementById('clockDate');
+        const clockFormat = document.getElementById('clockFormat');
+        const startStopwatch = document.getElementById('startStopwatch');
+        const startTimer = document.getElementById('startTimer');
+        const tictactoeBoard = document.getElementById('tictactoeBoard');
+        const tictactoeCells = document.querySelectorAll('.tictactoe-cell');
+        const tictactoeStatus = document.getElementById('tictactoeStatus');
+        const tictactoeReset = document.getElementById('tictactoeReset');
+        const refreshWeather = document.getElementById('refreshWeather');
+        const weatherContent = document.getElementById('weatherContent');
+
+        // App State
+        const state = {
+            theme: localStorage.getItem('theme') || 'light',
+            sidebarCollapsed: window.innerWidth <= 768,
+            todos: JSON.parse(localStorage.getItem('todos')) || [],
+            calculator: {
+                displayValue: '0',
+                firstOperand: null,
+                waitingForSecondOperand: false,
+                operator: null,
+            },
+            notes: localStorage.getItem('notes') || '',
+            clock: {
+                format24h: localStorage.getItem('clockFormat') === 'true',
+                interval: null,
+            },
+            tictactoe: {
+                board: Array(9).fill(''),
+                currentPlayer: 'X',
+                gameOver: false,
+            },
+            weather: {
+                location: 'New York',
+                temperature: null,
+                description: null,
+                humidity: null,
+                windSpeed: null,
+                windDirection: null,
+            },
+            activeSection: 'dashboard',
+        };
+
+        // Initialize App
+        function initApp() {
+            // Set initial theme
+            document.documentElement.setAttribute('data-theme', state.theme);
+            updateThemeIcons();
+
+            // Set initial sidebar state
+            if (state.sidebarCollapsed) {
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.classList.add('main-content-expanded');
+            }
+
+            // Load todos
+            renderTodos();
+
+            // Load notes
+            notesTextarea.value = state.notes;
+
+            // Start clock
+            startClock();
+
+            // Initialize calculator
+            updateCalculatorDisplay();
+
+            // Initialize tic tac toe
+            renderTictactoeBoard();
+
+            // Load weather data
+            fetchWeatherData();
+
+            // Add event listeners
+            addEventListeners();
+        }
+
+        // Event Listeners
+        function addEventListeners() {
+            // Sidebar toggle
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            headerThemeToggle.addEventListener('click', toggleTheme);
+
+            // Todo form
+            todoForm.addEventListener('submit', addTodo);
+            clearCompletedTodos.addEventListener('click', clearCompleted);
+
+            // Calculator
+            calculatorButtons.forEach(button => {
+                button.addEventListener('click', handleCalculatorInput);
+            });
+
+            // Notes
+            saveNotes.addEventListener('click', saveNotesToStorage);
+            clearNotes.addEventListener('click', clearNotesContent);
+            notesTextarea.addEventListener('input', autoSaveNotes);
+
+            // Clock
+            clockFormat.addEventListener('click', toggleClockFormat);
+            startStopwatch.addEventListener('click', showStopwatch);
+            startTimer.addEventListener('click', showTimer);
+
+            // Tic Tac Toe
+            tictactoeCells.forEach(cell => {
+                cell.addEventListener('click', handleTictactoeClick);
+            });
+            tictactoeReset.addEventListener('click', resetTictactoe);
+
+            // Weather
+            refreshWeather.addEventListener('click', fetchWeatherData);
+
+            // Navigation
+            document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = item.getAttribute('data-section');
+                    changeSection(section);
+                });
+            });
+
+            // Window resize
+            window.addEventListener('resize', handleResize);
+        }
+
+        // Sidebar Functions
+        function toggleSidebar() {
+            sidebar.classList.toggle('sidebar-collapsed');
+            sidebar.classList.toggle('sidebar-expanded');
+            mainContent.classList.toggle('main-content-expanded');
+            sidebarOverlay.classList.toggle('active');
+            state.sidebarCollapsed = sidebar.classList.contains('sidebar-collapsed');
+        }
+
+        function closeSidebar() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('sidebar-collapsed');
+                sidebar.classList.remove('sidebar-expanded');
+                mainContent.classList.add('main-content-expanded');
+                sidebarOverlay.classList.remove('active');
+                state.sidebarCollapsed = true;
+            }
+        }
+
+        function handleResize() {
+            if (window.innerWidth <= 768) {
+                if (!sidebar.classList.contains('sidebar-collapsed') && !sidebar.classList.contains('sidebar-expanded')) {
+                    sidebar.classList.add('sidebar-collapsed');
+                    mainContent.classList.add('main-content-expanded');
+                    state.sidebarCollapsed = true;
+                }
+            } else {
+                sidebarOverlay.classList.remove('active');
+            }
+        }
+
+        // Theme Functions
+        function toggleTheme() {
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', state.theme);
+            localStorage.setItem('theme', state.theme);
+            updateThemeIcons();
+        }
+
+        function updateThemeIcons() {
+            if (state.theme === 'dark') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                headerThemeIcon.classList.remove('fa-moon');
+                headerThemeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                headerThemeIcon.classList.remove('fa-sun');
+                headerThemeIcon.classList.add('fa-moon');
+            }
+        }
+
+        // Todo Functions
+        function addTodo(e) {
+            e.preventDefault();
+            const todoText = todoInput.value.trim();
+            if (todoText) {
+                const newTodo = {
+                    id: Date.now(),
+                    text: todoText,
+                    completed: false,
+                };
+                state.todos.push(newTodo);
+                saveTodos();
+                renderTodos();
+                todoInput.value = '';
+            }
+        }
+
+        function toggleTodoComplete(id) {
+            state.todos = state.todos.map(todo => {
+                if (todo.id === id) {
+                    return { ...todo, completed: !todo.completed };
+                }
+                return todo;
+            });
+            saveTodos();
+            renderTodos();
+        }
+
+        function deleteTodo(id) {
+            state.todos = state.todos.filter(todo => todo.id !== id);
+            saveTodos();
+            renderTodos();
+        }
+
+        function clearCompleted() {
+            state.todos = state.todos.filter(todo => !todo.completed);
+            saveTodos();
+            renderTodos();
+        }
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(state.todos));
+        }
+
+        function renderTodos() {
+            todoList.innerHTML = '';
+            if (state.todos.length === 0) {
+                const emptyMessage = document.createElement('li');
+                emptyMessage.textContent = 'No tasks yet. Add one above!';
+                emptyMessage.style.textAlign = 'center';
+                emptyMessage.style.color = 'var(--text-light)';
+                emptyMessage.style.padding = '1rem 0';
+                todoList.appendChild(emptyMessage);
+                return;
+            }
+
+            state.todos.forEach(todo => {
+                const todoItem = document.createElement('li');
+                todoItem.className = 'todo-item animate-slide-in-left';
+                
+                const checkbox = document.createElement('div');
+                checkbox.className = `todo-checkbox ${todo.completed ? 'checked' : ''}`;
+                checkbox.innerHTML = todo.completed ? '<i class="fas fa-check"></i>' : '';
+                checkbox.addEventListener('click', () => toggleTodoComplete(todo.id));
+                
+                const todoText = document.createElement('div');
+                todoText.className = `todo-text ${todo.completed ? 'completed' : ''}`;
+                todoText.textContent = todo.text;
+                
+                const deleteBtn = document.createElement('div');
+                deleteBtn.className = 'todo-delete';
+                deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+                deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
+                
+                todoItem.appendChild(checkbox);
+                todoItem.appendChild(todoText);
+                todoItem.appendChild(deleteBtn);
+                
+                todoList.appendChild(todoItem);
+            });
+        }
+
+        // Calculator Functions
+        function handleCalculatorInput(e) {
+            const { action, value } = e.target.dataset;
+            
+            if (value) {
+                inputDigit(value);
+            } else if (action) {
+                switch (action) {
+                    case 'add':
+                    case 'subtract':
+                    case 'multiply':
+                    case 'divide':
+                        handleOperator(action);
+                        break;
+                    case 'clear':
+                        resetCalculator();
+                        break;
+                    case 'calculate':
+                        calculate();
+                        break;
+                    case 'decimal':
+                        inputDecimal();
+                        break;
+                    case 'percent':
+                        handlePercent();
+                        break;
+                    case 'backspace':
+                        handleBackspace();
+                        break;
+                }
+            }
+            
+            updateCalculatorDisplay();
+        }
+
+        function inputDigit(digit) {
+            const { displayValue, waitingForSecondOperand } = state.calculator;
+            
+            if (waitingForSecondOperand) {
+                state.calculator.displayValue = digit;
+                state.calculator.waitingForSecondOperand = false;
+            } else {
+                state.calculator.displayValue = displayValue === '0' ? digit : displayValue + digit;
+            }
+        }
+
+        function inputDecimal() {
+            if (state.calculator.waitingForSecondOperand) {
+                state.calculator.displayValue = '0.';
+                state.calculator.waitingForSecondOperand = false;
+                return;
+            }
+            
+            if (!state.calculator.displayValue.includes('.')) {
+                state.calculator.displayValue += '.';
+            }
+        }
+
+        function handleOperator(nextOperator) {
+            const { firstOperand, displayValue, operator } = state.calculator;
+            const inputValue = parseFloat(displayValue);
+            
+            if (firstOperand === null) {
+                state.calculator.firstOperand = inputValue;
+            } else if (operator) {
+                const result = performCalculation();
+                state.calculator.displayValue = String(result);
+                state.calculator.firstOperand = result;
+            }
+            
+            state.calculator.waitingForSecondOperand = true;
+            state.calculator.operator = nextOperator;
+        }
+
+        function handlePercent() {
+            const { displayValue } = state.calculator;
+            const inputValue = parseFloat(displayValue);
+            state.calculator.displayValue = String(inputValue / 100);
+        }
+
+        function handleBackspace() {
+            const { displayValue } = state.calculator;
+            if (displayValue.length > 1) {
+                state.calculator.displayValue = displayValue.slice(0, -1);
+            } else {
+                state.calculator.displayValue = '0';
+            }
+        }
+
+        function calculate() {
+            if (!state.calculator.operator || state.calculator.firstOperand === null) {
+                return;
+            }
+            
+            const result = performCalculation();
+            state.calculator.displayValue = String(result);
+            state.calculator.firstOperand = result;
+            state.calculator.operator = null;
+            state.calculator.waitingForSecondOperand = false;
+        }
+
+        function performCalculation() {
+            const { firstOperand, operator, displayValue } = state.calculator;
+            const secondOperand = parseFloat(displayValue);
+            
+            switch (operator) {
+                case 'add':
+                    return firstOperand + secondOperand;
+                case 'subtract':
+                    return firstOperand - secondOperand;
+                case 'multiply':
+                    return firstOperand * secondOperand;
+                case 'divide':
+                    return firstOperand / secondOperand;
+                default:
+                    return secondOperand;
+            }
+        }
+
+        function resetCalculator() {
+            state.calculator.displayValue = '0';
+            state.calculator.firstOperand = null;
+            state.calculator.waitingForSecondOperand = false;
+            state.calculator.operator = null;
+        }
+
+        function updateCalculatorDisplay() {
+            calculatorDisplay.textContent = state.calculator.displayValue;
+        }
+
+        // Notes Functions
+        function saveNotesToStorage() {
+            state.notes = notesTextarea.value;
+            localStorage.setItem('notes', state.notes);
+            showSaveStatus('Notes saved!');
+        }
+
+        function autoSaveNotes() {
+            state.notes = notesTextarea.value;
+            localStorage.setItem('notes', state.notes);
+        }
+
+        function clearNotesContent() {
+            if (confirm('Are you sure you want to clear all notes?')) {
+                notesTextarea.value = '';
+                state.notes = '';
+                localStorage.setItem('notes', '');
+                showSaveStatus('Notes cleared!');
+            }
+        }
+
+        function showSaveStatus(message) {
+            notesSaveStatus.textContent = message;
+            setTimeout(() => {
+                notesSaveStatus.textContent = '';
+            }, 2000);
+        }
+
+        // Clock Functions
+        function startClock() {
+            updateClock();
+            state.clock.interval = setInterval(updateClock, 1000);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            
+            // Update time
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            
+            let timeString;
+            if (state.clock.format24h) {
+                timeString = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+            } else {
+                const period = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                timeString = `${hours}:${minutes}:${seconds} ${period}`;
+            }
+            
+            clockTime.textContent = timeString;
+            
+            // Update date
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+            clockDate.textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        function toggleClockFormat() {
+            state.clock.format24h = !state.clock.format24h;
+            localStorage.setItem('clockFormat', state.clock.format24h);
+            updateClock();
+        }
+
+        function showStopwatch() {
+            alert('Stopwatch functionality coming soon!');
+        }
+
+        function showTimer() {
+            alert('Timer functionality coming soon!');
+        }
+
+        // Tic Tac Toe Functions
+        function handleTictactoeClick(e) {
+            const index = parseInt(e.target.getAttribute('data-index'));
+            
+            if (state.tictactoe.board[index] || state.tictactoe.gameOver) {
+                return;
+            }
+            
+            state.tictactoe.board[index] = state.tictactoe.currentPlayer;
+            renderTictactoeBoard();
+            
+            if (checkWinner()) {
+                state.tictactoe.gameOver = true;
+                tictactoeStatus.textContent = `${state.tictactoe.currentPlayer} wins!`;
+                return;
+            }
+            
+            if (state.tictactoe.board.every(cell => cell)) {
+                state.tictactoe.gameOver = true;
+                tictactoeStatus.textContent = 'Game ended in a draw!';
+                return;
+            }
+            
+            state.tictactoe.currentPlayer = state.tictactoe.currentPlayer === 'X' ? 'O' : 'X';
+            tictactoeStatus.textContent = `${state.tictactoe.currentPlayer}'s turn`;
+        }
+
+        function renderTictactoeBoard() {
+            tictactoeCells.forEach((cell, index) => {
+                cell.textContent = state.tictactoe.board[index];
+                cell.className = 'tictactoe-cell';
+                
+                if (state.tictactoe.board[index]) {
+                    cell.classList.add(state.tictactoe.board[index].toLowerCase());
+                }
+            });
+        }
+
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
+            
+            return winPatterns.some(pattern => {
+                const [a, b, c] = pattern;
+                return state.tictactoe.board[a] &&
+                       state.tictactoe.board[a] === state.tictactoe.board[b] &&
+                       state.tictactoe.board[a] === state.tictactoe.board[c];
+            });
+        }
+
+        function resetTictactoe() {
+            state.tictactoe.board = Array(9).fill('');
+            state.tictactoe.currentPlayer = 'X';
+            state.tictactoe.gameOver = false;
+            tictactoeStatus.textContent = `X's turn`;
+            renderTictactoeBoard();
+        }
+
+        // Weather Functions
+        function fetchWeatherData() {
+            // In a real app, you would fetch from a weather API
+            // For this demo, we'll use mock data
+            setTimeout(() => {
+                const mockWeatherData = {
+                    location: 'New York, NY',
+                    temperature: 22,
+                    description: 'Partly Cloudy',
+                    humidity: 65,
+                    windSpeed: 12,
+                    windDirection: 'NE',
+                };
+                
+                updateWeatherUI(mockWeatherData);
+            }, 1000);
+        }
+
+        function updateWeatherUI(data) {
+            const weatherIcon = weatherContent.querySelector('.weather-icon i');
+            const weatherTemp = weatherContent.querySelector('.weather-temp');
+            const weatherDesc = weatherContent.querySelector('.weather-desc');
+            const weatherDetails = weatherContent.querySelectorAll('.weather-detail div:not(.weather-detail-icon)');
+            const weatherLocation = weatherContent.querySelector('.weather-location');
+            
+            // Update icon based on description
+            if (data.description.toLowerCase().includes('cloud')) {
+                weatherIcon.className = 'fas fa-cloud';
+            } else if (data.description.toLowerCase().includes('rain')) {
+                weatherIcon.className = 'fas fa-cloud-rain';
+            } else if (data.description.toLowerCase().includes('snow')) {
+                weatherIcon.className = 'fas fa-snowflake';
+            } else {
+                weatherIcon.className = 'fas fa-sun';
+            }
+            
+            weatherTemp.textContent = `${data.temperature}°C`;
+            weatherDesc.textContent = data.description;
+            weatherDetails[0].textContent = `${data.humidity}%`;
+            weatherDetails[1].textContent = `${data.windSpeed} km/h`;
+            weatherDetails[2].textContent = data.windDirection;
+            weatherLocation.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${data.location}`;
+        }
+
+        // Navigation Functions
+        function changeSection(section) {
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.querySelector(`.sidebar-item[data-section="${section}"]`).classList.add('active');
+            
+            document.querySelector('.header-title').textContent = section.charAt(0).toUpperCase() + section.slice(1);
+            
+            state.activeSection = section;
+            
+            // In a real app, you would show/hide sections based on the active section
+            // For this demo, we'll just keep everything visible
+            
+            // Close sidebar on mobile after navigation
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
